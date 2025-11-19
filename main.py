@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 import yt_dlp
 import uuid
 import os
@@ -8,11 +9,16 @@ app = FastAPI()
 @app.get("/download")
 def download_video(url: str):
     video_id = str(uuid.uuid4())
-    file_path = f"/app/{video_id}.mp4"
+    file_path = f"/tmp/{video_id}.mp4"   # ← AGORA FUNCIONA NO RENDER
 
     ydl_opts = {
         "outtmpl": file_path,
-        "format": "mp4"
+        "format": "mp4",
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "web_safari", "default"]
+            }
+        }
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -20,12 +26,12 @@ def download_video(url: str):
 
     return {
         "video_id": video_id,
-        "file_url": f"/files/{video_id}.mp4"
+        "download_url": f"/files/{video_id}.mp4"
     }
 
 @app.get("/files/{filename}")
 def serve_file(filename: str):
-    file_full_path = f"/app/{filename}"
-    if os.path.exists(file_full_path):
-        return FileResponse(file_full_path)
+    path = f"/tmp/{filename}"
+    if os.path.exists(path):
+        return FileResponse(path)
     return {"error": "File not found"}
