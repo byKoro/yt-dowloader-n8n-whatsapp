@@ -9,7 +9,7 @@ app = FastAPI()
 @app.get("/download")
 def download_video(url: str):
     video_id = str(uuid.uuid4())
-    file_path = f"/tmp/{video_id}.mp4"   # ← AGORA FUNCIONA NO RENDER
+    file_path = f"/tmp/{video_id}.mp4"
 
     ydl_opts = {
         "outtmpl": file_path,
